@@ -1,5 +1,6 @@
 import eventlet
 import socketio
+from geopy.geocoders import Nominatim
 
 sio = socketio.Server()
 
@@ -20,6 +21,14 @@ def getCloseStops(sid, data):
 @sio.event
 def disconnect(sid):
     print("disconnect ", sid)
+
+@sio.event
+def get_coords_from_addr(sid, data):
+    geolocator = Nominatim(user_agent="appapp123")
+    location = geolocator.geocode(data["goal_addr"])
+    goal_coords = {"lat": location.latitude, "long": location.longitude}
+    return goal_coords
+
 
 if __name__ == "__main__":
     app = socketio.WSGIApp(sio, static_files={
