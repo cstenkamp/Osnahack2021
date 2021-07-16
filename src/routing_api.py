@@ -39,6 +39,8 @@ class API:
         return self.get("http://gtfsr.vbn.de/api/routers/connect/plan", data)
 
     def bestRoutes(self, data, goal, numberOfStations=20):
+        if isinstance(goal, dict):
+            goal = goal["lat"], goal["lon"]
         nearestStations = []
         data['radius'] = 50
         count = 0

@@ -6,6 +6,7 @@ from infowin import InfowinManager
 import routing_api
 from show_map import show_map
 from consts import SEEDHOUSE, GOAL_ADDR, POLL_INTERVAL
+from datetime import datetime, timedelta
 
 sio = socketio.Client()
 
@@ -58,7 +59,7 @@ class MockApp():
         # show_map(start_coords, goal_coords, starting_busstops)
 
     def set_coordinates(self, lat, long):
-        self.coordinates = {"lat": lat, "long": long}
+        self.coordinates = {"lat": lat, "lon": long}
 
     def get_coords_from_addr(self, goal_addr):
         sio.emit("get_coords_from_addr", {"goal_addr": goal_addr}, callback=self.write_coords)
@@ -75,14 +76,31 @@ if __name__ == "__main__":
         ma.get_coords_from_addr(GOAL_ADDR)
         while not hasattr(ma, "goal_coordinates"):
             sleep(0.1)
+        api = routing_api.API()
+
+        best = api.bestRoutes(ma.coordinates, ma.goal_coordinates)
+        best = {k: {**v, **{"next_bus": (nb := datetime.fromtimestamp([i for i in v["plan"]["itineraries"][0]["legs"] if i["mode"] == "BUS"][0]["startTime"]/1000)),
+                            "walk_time": (wt := timedelta(seconds=v["plan"]["itineraries"][0]["legs"][0]["duration"])),
+                            "arrive_time": (at := nb-datetime.now()),
+                            "arrive_early": (at-wt).total_seconds(),
+                            }
+                    }
+                for k,v in best.items()
+                }
+        stop_positions = {k: [*[float(i) for i in v["requestParameters"]["intermediatePlaces"].split(",")], "green" if v["arrive_early"] < sum([v["arrive_early"] for v in best.values()])/len(best) else "red"] for k, v in best.items()}
+        show_map([ma.coordinates["lat"], ma.coordinates["lon"]],
+                     [ma.goal_coordinates["lat"], ma.goal_coordinates["lon"]],
+                     [
+                         (*i, "green") for i in stop_positions.values()
+                     ]
+                 )
 
         #TODO put this into the actual backend lol
         #ask our routing-API for the best ways from start to goal
-        api = routing_api.API()
         data = {"arriveBy": False,
                 "date": "07-25-2021",
                 "fromPlace": SEEDHOUSE, #TODO ma.coordinates
-                "toPlace": (ma.goal_coordinates["lat"], ma.goal_coordinates["long"]),
+                "toPlace": (ma.goal_coordinates["lat"], ma.goal_coordinates["lon"]),
                 "time": "13:00:00",
                 "mode": ("WALK", "TRANSIT"),
                 "maxWalkDistance": 3000} #TODO das ist jetzt ne random distanz etc, das muss noch vernünftig gesetzt werden

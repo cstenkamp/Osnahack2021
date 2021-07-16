@@ -11,7 +11,7 @@ def connect(sid, environ):
 
 @sio.event
 def getCloseStops(sid, data):
-    assert "lat" in data and "long" in data
+    assert "lat" in data and "lon" in data
     if data["lat"] > 45:
         response = {"Neumarkt": {"DistanceInSeconds": 2}, "ADP": {"DistanceInSeconds": 15}}
     else:
@@ -26,7 +26,7 @@ def disconnect(sid):
 def get_coords_from_addr(sid, data):
     geolocator = Nominatim(user_agent="appapp123")
     location = geolocator.geocode(data["goal_addr"])
-    goal_coords = {"lat": location.latitude, "long": location.longitude}
+    goal_coords = {"lat": location.latitude, "lon": location.longitude}
     return goal_coords
 
 
