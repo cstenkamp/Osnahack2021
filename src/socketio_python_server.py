@@ -51,7 +51,7 @@ def get_close_stops(sid, data):
                           "green" if v["goal_time"] <= min([i["goal_time"] for i in best.values()]) else (
                               "yellow" if v["arrive_early"] < sum([v["arrive_early"] for v in best.values()]) / len(
                                   best) else "red")] for k, v in best.items()}
-    return stop_positions
+    return stop_positions, data["start"]
 
 
 

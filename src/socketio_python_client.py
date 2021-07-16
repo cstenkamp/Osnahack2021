@@ -69,10 +69,13 @@ class MockApp():
         self.goal_coordinates = args[0]
 
     def get_close_stops(self, *args):
+        print(f"asking for close stops @ {self.coordinates}")
         sio.emit("get_close_stops", {"start": self.coordinates, "goal": self.goal_coordinates}, callback=self.write_closestops)
 
     def write_closestops(self, *args):
         self.close_stops = args[0]
+        self.from_coords = args[1]
+        print(f"received for coordinates {args[1]}")
         show_map([ma.coordinates["lat"], ma.coordinates["lon"]],
                      [ma.goal_coordinates["lat"], ma.goal_coordinates["lon"]],
                      [
@@ -94,9 +97,9 @@ if __name__ == "__main__":
             sleep(0.1)
 
         ma.mainloop_thread()
-        sleep(30)
+        sleep(10)
         print("changed coordinates")
-        ma.set_coordinates(ma.coordinates["lat"]+0.01, ma.coordinates["lon"])
+        ma.set_coordinates(ma.coordinates["lat"], ma.coordinates["lon"]+0.015)
         sleep(30)
         ma.kill()
 

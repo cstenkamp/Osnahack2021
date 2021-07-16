@@ -50,7 +50,7 @@ class API:
             # pprint((nearestStations))
             data['radius'] += 50
         # print(count)
-        pprint("nearestStations: " + str(nearestStations))
+        # pprint("nearestStations: " + str(nearestStations))
         routes = {}
         # pos -> stations
         # stations -> goal
