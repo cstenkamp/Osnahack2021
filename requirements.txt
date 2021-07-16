@@ -4,3 +4,5 @@ geopy
 python-socketio
 eventlet
 websocket-client
+matplotlib
+matplotlib-scalebar

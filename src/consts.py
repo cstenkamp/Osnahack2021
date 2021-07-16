@@ -1,0 +1,3 @@
+SEEDHOUSE = (52.2880747, 8.01449985)
+GOAL_ADDR = "Theodor-Heuss-Platz 2. 49074 Osnabrück"
+POLL_INTERVAL = 2

@@ -4,6 +4,8 @@ import socketio
 from queue import Queue
 from infowin import InfowinManager
 import routing_api
+from show_map import show_map
+from consts import SEEDHOUSE, GOAL_ADDR, POLL_INTERVAL
 
 sio = socketio.Client()
 
@@ -53,6 +55,8 @@ class MockApp():
         print(f"Closest stop is {self.closest_stop} with {close_stops[self.closest_stop]}")
         stop_display.display(self.closest_stop)
 
+        # show_map(start_coords, goal_coords, starting_busstops)
+
     def set_coordinates(self, lat, long):
         self.coordinates = {"lat": lat, "long": long}
 
@@ -63,16 +67,12 @@ class MockApp():
         self.goal_coordinates = args[0]
 
 if __name__ == "__main__":
-    #find start and goal coordinates using geopy
-    # goal_addr = input("Wohin willst du?")
     with InfowinManager() as iwm:
-        seedhouse_coords = (52.2880747, 8.01449985)
-        goal_addr = "Theodor-Heuss-Platz 2. 49074 Osnabrück"
-        POLL_INTERVAL = 2
         stop_display = iwm.new_window('closest_stop', (700, 800))
         ma = MockApp(stop_display, "localhost", 5000, POLL_INTERVAL)
-        ma.set_coordinates(50, 50)
-        ma.get_coords_from_addr(goal_addr)
+        ma.set_coordinates(*SEEDHOUSE)
+        #goal_addr = input("Wohin willst du?")
+        ma.get_coords_from_addr(GOAL_ADDR)
         while not hasattr(ma, "goal_coordinates"):
             sleep(0.1)
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         api = routing_api.API()
         data = {"arriveBy": False,
                 "date": "07-25-2021",
-                "fromPlace": seedhouse_coords,
+                "fromPlace": SEEDHOUSE, #TODO ma.coordinates
                 "toPlace": (ma.goal_coordinates["lat"], ma.goal_coordinates["long"]),
                 "time": "13:00:00",
                 "mode": ("WALK", "TRANSIT"),
@@ -100,11 +100,10 @@ if __name__ == "__main__":
             route, fromstop, tostop = first_buselement["route"], first_buselement["from"]["name"], first_buselement["to"]["name"]
             print(f"You can walk to {fromstop} to take the {route} to {tostop}")
             #add the starting coordinates as tuple to our set of possible startign coordinates...
-            starting_busstops.add((first_buselement["from"]["lat"], first_buselement["from"]["lon"]))
+            starting_busstops.add((first_buselement["from"]["lat"], first_buselement["from"]["lon"], "green"))
         #so now the problem is that it often only selects routes with the very same starting busstop
         #sooo a better alternative would be to find all busstops around me, and then from all the coordinates of these
         #try to find a route with zero inital walking
-
 
 
         ma.mainloop_thread()
