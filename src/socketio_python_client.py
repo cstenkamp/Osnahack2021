@@ -94,7 +94,6 @@ if __name__ == "__main__":
                          (*i, "green") for i in stop_positions.values()
                      ]
                  )
-
         #TODO put this into the actual backend lol
         #ask our routing-API for the best ways from start to goal
         data = {"arriveBy": False,
